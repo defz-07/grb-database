@@ -1,0 +1,73 @@
+import { PrismaClient } from "@prisma/client";
+
+const prisma = new PrismaClient();
+
+export const getCart = async (req, res) => {
+  try {
+    const response = await prisma.cart.findMany();
+    res.status(200).json(response);
+  } catch (error) {
+    res.status(500).json({ error: "Error happened" });
+  }
+};
+
+export const getCartById = async (req, res) => {
+  const cartId = Number(req.params.id);
+  try {
+    const response = await prisma.cart.findUnique({
+      where: { id: cartId },
+    });
+    if (!response) {
+      res.status(404).json({ error: "Cart not found" });
+    } else {
+      res.status(200).json(response);
+    }
+  } catch (error) {
+    res.status(500).json({ error: "Internal server error" });
+  }
+};
+
+export const createCart = async (req, res) => {
+  const { totalItems, totalPrice, status } = req.body;
+  const t = await prisma.$transaction();
+  try {
+    const cart = await prisma.cart.create({
+      data: {
+        totalItems: totalItems,
+        totalPrice : totalPrice,
+        status: status,
+      },
+    });
+    await t.$commit();
+    res.status(201).json(cart);
+  } catch (error) {
+    await t.$rollback();
+    res.status(400).json({ error: "Bad request" });
+  }
+};
+
+export const updateCart = async (req, res) => {
+  const cartId = Number(req.params.id);
+  const { totalItems, totalPrice, status } = req.body;
+  try {
+    const cart = await prisma.cart.update({
+      where: { id: cartId },
+      data: { totalItems, totalPrice, status },
+    });
+    res.status(200).json(cart);
+  } catch (error) {
+    res.status(400).json({ error: "Bad request" });
+  }
+};
+
+export const deleteCart = async (req, res) => {
+  const cartId = Number(req.params.id);
+  try {
+    const cart = await prisma.cart.delete({
+      where: { id: cartId },
+    });
+    res.status(200).json(cart);
+  } catch (error) {
+    res.status(400).json({ error: "Bad request" });
+  }
+};

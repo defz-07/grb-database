@@ -1,0 +1,90 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model Publisher {
+  id              Int    @id @default(autoincrement())
+  publisherName   String @unique
+  city            String
+  country         String
+  telephoneNumber String
+  yearFounded     Int
+  Book            Book   @relation(fields: [bookId], references: [id])
+  bookId          Int    @unique
+}
+
+model Book {
+  id              Int         @id @default(autoincrement())
+  bookTitle       String      @unique
+  publicationYear Int
+  pages           Int
+  price           Float
+  Category        Category    @relation(fields: [categoryId], references: [id])
+  categoryId      Int         @unique
+  Author          Author      @relation(fields: [authorId], references: [id])
+  authorId        Int         @unique
+  Payment         Payment[]
+  Publisher       Publisher[]
+}
+
+model Customer {
+  id              Int       @id @default(autoincrement())
+  customerName    String    @unique
+  age             Int
+  telephoneNumber String
+  city            String
+  country         String
+  Payment         Payment[]
+}
+
+model Employee {
+  id              Int    @id @default(autoincrement())
+  employeeName    String @unique
+  telephoneNumber String
+  salary          Int
+  city            String
+  country         String
+}
+
+model Author {
+  id         Int      @id @default(autoincrement())
+  authorName String   @unique
+  biography  String
+  birthDate  DateTime
+  email      String
+  Book       Book[]
+}
+
+model Payment {
+  id          Int      @id @default(autoincrement())
+  totalPrice  Float
+  quantity    Int
+  paymentDate DateTime
+  paymentType String
+  Customer    Customer @relation(fields: [customerId], references: [id])
+  customerId  Int      @unique
+  Book        Book     @relation(fields: [bookId], references: [id])
+  bookId      Int      @unique
+}
+
+model Category {
+  id             Int    @id @default(autoincrement())
+  genre          String
+  ageRestriction Int
+  Book           Book[]
+}
+
+model Cart {
+  id         Int    @id @default(autoincrement())
+  totalItems Int
+  totalPrice Int
+  status     String
+}
